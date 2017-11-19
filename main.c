@@ -1,19 +1,15 @@
 /*
- *	Written by Niklas Schmelzle <niklas.schmelzle@gmail.com>
  *	main.c
  *
- *	TODO:
+ *	Created: 18.11.2017
+ * 	Author : Niklas Schmelzle
+ *
+ * 	TODO:
  *
  */
 
 #include <msp430f2274.h>
-
-
-void delay(){
-	for(int i = 0; i < 50; i++){
-		__delay_cycles(25000);
-	}
-}
+#include "i2c.h"
 
 
 int main(void)
@@ -22,10 +18,7 @@ int main(void)
 
 	P1DIR = 0xFF;
 	while(1){
-		P1OUT = 0b1;
-		delay();
-		P1OUT = 0b10;
-		delay();
+		test();
 	}
 
 	return 0;

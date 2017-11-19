@@ -1,4 +1,4 @@
-OBJECTS=main.o
+OBJECTS=main.o i2c.o
 
 GCC_DIR =  ~/ti/msp430_gcc/bin
 SUPPORT_FILE_DIRECTORY = ~/ti/msp430_gcc/include
@@ -8,7 +8,7 @@ CC      = $(GCC_DIR)/msp430-elf-gcc
 GDB     = $(GCC_DIR)/msp430-elf-gdb
 UPLOAD	=	mspdebug
 
-CFLAGS = -I $(SUPPORT_FILE_DIRECTORY) -mmcu=$(DEVICE) -O2 -g
+CFLAGS = -I $(SUPPORT_FILE_DIRECTORY) -mmcu=$(DEVICE) -O0 -g
 LFLAGS = -L $(SUPPORT_FILE_DIRECTORY)
 
 all: ${OBJECTS}
