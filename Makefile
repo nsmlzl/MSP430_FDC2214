@@ -1,11 +1,11 @@
 TARGET = main.c
-INCLUDES = includes/nsi2c.c includes/nsi2c.h
+INCLUDES = #includes/nsi2c.c includes/nsi2c.h
 
 
 GCC_DIR =  ~/ti/msp430_gcc/bin
 SUPPORT_FILE_DIRECTORY = ~/ti/msp430_gcc/include
 
-DEVICE  = msp430f2274
+DEVICE  = msp430f5529
 CC      = $(GCC_DIR)/msp430-elf-gcc
 GDB     = $(GCC_DIR)/msp430-elf-gdb
 UPLOAD	=	mspdebug
@@ -20,14 +20,13 @@ all: ${OBJECTS}
 	$(CC) $(CFLAGS) $(LFLAGS) $? -o main.out
 
 program: all
-	$(UPLOAD) rf2500 erase "prog main.out"
+	$(UPLOAD) tilib erase "prog main.out"
 
-debug: all
+gdb: all
 	$(GDB) main.out -ex "target remote :2000" -ex "load"
 
 clean:
 	rm *.out *.o ./*/*.o
 
-msp:
-	#$(UPLOAD) rf2500 reset gdb
-	$(UPLOAD) rf2500 erase gdb
+gdbproxy:
+	$(UPLOAD) tilib erase gdb
