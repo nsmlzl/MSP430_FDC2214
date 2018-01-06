@@ -8,13 +8,13 @@
  *
  */
 
-#include <msp430f2274.h>
-// #include "includes/TI_USCI_I2C_master.h"
-#include "includes/nsi2c.h"
+#include <msp430f5529.h>
+// #include "includes/nsi2c.h"
 
 void error();
 void redLed();
 void greenLed();
+void ledOn();
 void ledOff();
 
 
@@ -23,16 +23,15 @@ int main(void)
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 
 	// turn LEDs on
-	P1DIR = 0x3;
-	P1OUT = 0x3;
+	ledOn();
 
 	// is CC3000 module the problem?
-	P3DIR |= 0x0F;
+	// P3DIR |= 0x0F;
 
 /*
  * Own USCI Library
  */
-	nsi_init();
+	// nsi_init();
 
 /*
  * USCI Library
@@ -94,20 +93,31 @@ void error(){
 
 // Function turns red LED on
 void redLed(){
+	P1DIR |= 0x1;
 	P1OUT |= 0x1;
-	P1OUT &= ~(1 << 0x1);
+	P4OUT &= ~(0x1 << 7);
 }
 
 
 // Function turns green LED on
 void greenLed(){
-	P1OUT &= ~(1);
-	P1OUT |= 0x2;
+	P4DIR |= 0x80;
+	P4OUT |= 0x80;
+	P1OUT &= ~0x1;
+}
+
+
+// Function turns both LED on
+void ledOn(){
+	P1DIR |= 0x1;
+	P1OUT |= 0x1;
+	P4DIR |= 0x80;
+	P4OUT |= 0x80;
 }
 
 
 // Function turns both LED off
 void ledOff(){
-	P1OUT &= ~(1);
-	P1OUT &= ~(1 << 1);
+	P1OUT &= ~0x1;
+	P4OUT &= ~(0x1 << 7);
 }
