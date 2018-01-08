@@ -27,7 +27,7 @@ int main(void){
 /*
  * testing of own USCI Library
  */
-	unsigned char testData[3] = {0x1, 0x1, 0x7};
+	unsigned char testData[3] = {0x1, 0x1, 0x8};
 
 	nsi_transmit(0x50, 3, testData);
 	// wait for write time of EEPROM
