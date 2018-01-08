@@ -9,7 +9,7 @@
  */
 
 #include <msp430f5529.h>
-// #include "includes/nsi2c.h"
+#include "include/nsi2c.h"
 
 void error();
 void redLed();
@@ -18,73 +18,35 @@ void ledOn();
 void ledOff();
 
 
-int main(void)
-{
+int main(void){
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 
 	// turn LEDs on
 	ledOn();
 
-	// is CC3000 module the problem?
-	// P3DIR |= 0x0F;
-
 /*
- * Own USCI Library
+ * testing of own USCI Library
  */
-	// nsi_init();
+	unsigned char testData[3] = {0x1, 0x1, 0x7};
 
-/*
- * USCI Library
-
-
-	BCSCTL1 = CALBC1_8MHZ;
-	DCOCTL = CALDCO_8MHZ;
-	// enable interrups
-	_EINT();
-	// initialize USCI
-	TI_USCI_I2C_transmitinit(0x50, 0x12);
-	// wait for bus to be free
-	while (TI_USCI_I2C_notready());
-
-	// check for slave
-	if(TI_USCI_I2C_slave_present(0x50) != 0){
-		// only green
-		P1OUT |= 0x2;
-		P1OUT &= ~(1);
+	nsi_transmit(0x50, 3, testData);
+	// wait for write time of EEPROM
+	for(int i = 0; i < 160; i++){
+		__delay_cycles(1000);
 	}
-	else{
-		error();
-	}
-
-	// sending 0xA to 0x0101
-	unsigned char dataTrans[4] = {0x1, 0x1, 0xA, 0x1};
-	TI_USCI_I2C_transmit(3, dataTrans);
-	char testTrans = dataTrans[2];
-
-	// reading saved data
-	TI_USCI_I2C_transmit(2, dataTrans);
-	unsigned char dataRec[5] = {0, 0, 0, 0, 0};
-	TI_USCI_I2C_receiveinit(0x50, 0x12);
-	while(TI_USCI_I2C_notready());
-	TI_USCI_I2C_receive(1, dataRec);
-	char testRec = dataRec[0];
-
-	// put CPU to sleep during communication
-	LPM0;
-	*/
-
+	nsi_receive(0x50, 1, testData);
 
 	/*
 	while(1){
 	}
 	*/
 
-
 	ledOff();
 	return 0;
 }
 
 
+// Led function
 // Error function turns red LED on
 void error(){
 	redLed();

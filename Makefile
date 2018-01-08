@@ -1,5 +1,5 @@
 TARGET = main.c
-INCLUDES = #includes/nsi2c.c includes/nsi2c.h
+INCLUDES = include/nsi2c.c include/nsi2c.h
 
 
 GCC_DIR =  ~/ti/msp430_gcc/bin
