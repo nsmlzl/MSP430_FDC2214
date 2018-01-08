@@ -5,7 +5,6 @@
  * Author : Niklas Schmelzle
  *
  * TODO:
- * - receive function with interrupts
  * - NACK flag support
  *
  */
@@ -15,8 +14,8 @@
 
 #include <msp430f5529.h>
 
-void nsi_init(unsigned char i2cAddress);
-void nsi_transmit(unsigned char tmpI2CAddress, unsigned char tmpByteCtr, unsigned char *tmpTXData);
-void nsi_receive(unsigned char i2cAddress, unsigned char byteCtr, unsigned char *receiveData);
+// void nsi_init(unsigned char i2cAddr);
+void nsi_transmit(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpTXData);
+void nsi_receive(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpRXData);
 
 #endif
