@@ -28,22 +28,15 @@ int main(void){
  * testing of own USCI Library
  */
 	int nack = 0;
-	unsigned char testData[5] = {0x1, 0x1, 0xC, 0xD, 0xE};
+	unsigned char testTransmit[5] = {0x1, 0x1, 0x2, 0x3, 0x4};
+	unsigned char testReceive[3] = {0x0, 0x0, 0x0};
 
-	for(int i = 0; i < 1; i++){
-		nack += nsi_transmit(0x50, 5, testData);
-	}
+	nack += nsi_transmit(0x50, 5, testTransmit);
 	// wait for write time of EEPROM
 	for(int i = 0; i < 160; i++){
 		__delay_cycles(1000);
 	}
-	nack += nsi_transmit(0x50, 2, testData);
-
-	unsigned char receiveTest[3] = {0x0, 0x0, 0x0};
-	nack += nsi_receive(0x50, 3, receiveTest);
-	int test1 = receiveTest[0];
-	int test2 = receiveTest[1];
-	int test3 = receiveTest[2];
+	nack += nsi_transmit_receive(0x50, 2, testTransmit, 3, testReceive);
 
 	/*
 	while(1){
