@@ -3,6 +3,7 @@
 volatile unsigned char *txData;
 volatile unsigned char *rxData;
 volatile unsigned char byteCtr;
+volatile int nackOccured;
 
 
 // init usci i2c module
@@ -18,55 +19,65 @@ void nsi_init(unsigned char i2cAddr){
 	UCB0CTL1 &= ~UCSWRST;                     // Clear SW reset, resume operation
 
 	UCB0IE = 0;																// unset Interrupts
+	nackOccured = 0;													// reset NACK
 }
 
 
 // transmit data
-void nsi_transmit(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpTXData){
+int nsi_transmit(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpTXData){
 	nsi_init(i2cAddr);
 	// save locals to global variables (for interrupts)
 	byteCtr = tmpByteCtr;
 	txData = tmpTXData;
 
 	unsigned char tmpUCB0IE = UCB0IE;					// save interrupt settings
-	UCB0IE |= UCTXIE; 												// set I2C interrupts (transmit)
+	UCB0IE |= UCTXIE + UCNACKIE; 							// set I2C interrupts (transmit, NACK)
 
 	UCB0CTL1 |= UCTR + UCTXSTT;             	// I2C TX, start condition
-	// data transmit
-	__bis_SR_register(LPM0_bits + GIE);     	// Enter LPM0, enable interrupts
-	// data was transmitted
+	// only enter LPM0, if stop or nack signal wasn't send
+	if(!(UCB0CTL1 & UCTXSTP) && !nackOccured){
+		// data transmit
+		__bis_SR_register(LPM0_bits + GIE);     // Enter LPM0, enable interrupts
+		// data was transmitted
+	}
 	// wait for clearing of stop flag
 	while(UCB0CTL1 & UCTXSTP);
 
 	UCB0IE = tmpUCB0IE;												// unset I2C interrupts
+	return nackOccured;
 }
 
 
 // receive data
-void nsi_receive(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpRXData){
+int nsi_receive(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpRXData){
 	nsi_init(i2cAddr);
 	// connect local variables to globals
 	byteCtr = tmpByteCtr;
 	rxData = tmpRXData;
 
 	unsigned char tmpUCB0IE = UCB0IE;					// save interrupt settings
-	UCB0IE |= UCRXIE;													// set I2C interrupts (receive)
+	UCB0IE |= UCRXIE + UCNACKIE;							// set I2C interrupts (receive, NACK)
 
 	UCB0CTL1 &= ~UCTR;												// set receive mode
 	UCB0CTL1 |= UCTXSTT;											// start i2c
 	// if only one byte: send stop signal immediately after start flag is cleared
 	// this way, only one byte gets send by the slave
+	// don't do this, if slave send a NACK, just wait for the clearing of stop flag
 	if(byteCtr == 1){
-		while(UCB0CTL1 & UCTXSTT);
-		UCB0CTL1 |= UCTXSTP;
+		while((UCB0CTL1 & UCTXSTT) && !nackOccured);
+		if(!nackOccured) UCB0CTL1 |= UCTXSTP;
 	}
-	// receive data
-	__bis_SR_register(LPM0_bits + GIE);     	// Enter LPM0, enable interrupts
-	// data was received
+	// only enter LPM0, if stop or nack signal wasn't send
+	if(!(UCB0CTL1 & UCTXSTP) && !nackOccured){
+		// receive data
+		__bis_SR_register(LPM0_bits + GIE);     // Enter LPM0, enable interrupts
+		// data was received
+	}
 	// wait for clearing of stop flag
 	while(UCB0CTL1 & UCTXSTP);								// check if stop signal was send
 
 	UCB0IE = tmpUCB0IE;												// unset I2C interrupts
+	return nackOccured;
 }
 
 
@@ -83,7 +94,12 @@ void __attribute__ ((interrupt(USCI_B0_VECTOR))) USCI_B0_ISR (void)
 	switch(__even_in_range(UCB0IV,12)){
 		case  0:	break;                        // Vector  0: No interrupts
 		case  2:	break;                        // Vector  2: ALIFG
-		case  4:	break;                        // Vector  4: NACKIFG
+		case  4:																// Vector  4: NACKIFG
+							// send stop signal and exit active cpu
+							UCB0CTL1 |= UCTXSTP;
+							__bic_SR_register_on_exit(LPM0_bits);
+							nackOccured = 1;
+							break;
 		case  6:	break;                        // Vector  6: STTIFG
 		case  8:	break;                        // Vector  8: STPIFG
 		case 10:                                // Vector 10: RXIFG
