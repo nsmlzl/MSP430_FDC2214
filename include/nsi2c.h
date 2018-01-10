@@ -12,10 +12,11 @@
 #define NSI2C_H
 
 #include <msp430f5529.h>
+#include <inttypes.h>
 
-// void nsi_init(unsigned char i2cAddr);
-int nsi_transmit(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpTXData);
-int nsi_receive(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpRXData);
-int nsi_transmit_receive(unsigned char i2cAddr, unsigned char txByteCtr, unsigned char *tmpTXData, unsigned char rxByteCtr, unsigned char *tmpRXData);
+// void nsi_init(uint8_t i2cAddr);
+int16_t nsi_transmit(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpTXData);
+int16_t nsi_receive(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpRXData);
+int16_t nsi_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXData, uint8_t rxByteCtr, uint8_t *tmpRXData);
 
 #endif

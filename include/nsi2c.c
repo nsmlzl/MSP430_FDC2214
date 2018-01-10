@@ -1,14 +1,14 @@
 #include "nsi2c.h"
 
-volatile unsigned char *txData;
-volatile unsigned char *rxData;
-volatile unsigned char byteCtr;
-volatile int nackOccured;
-int repeatedStart;
+volatile uint8_t *txData;
+volatile uint8_t *rxData;
+volatile uint8_t byteCtr;
+volatile int16_t nackOccured;
+int16_t repeatedStart;
 
 
 // init usci i2c module
-void nsi_init(unsigned char i2cAddr){
+void nsi_init(uint8_t i2cAddr){
 	// init I2C
 	P3SEL |= 0x03;                            // Assign I2C pins to USCI_B0
 	UCB0CTL1 |= UCSWRST;                      // Enable SW reset
@@ -26,13 +26,13 @@ void nsi_init(unsigned char i2cAddr){
 
 
 // transmit data
-int nsi_transmit(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpTXData){
+int16_t nsi_transmit(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpTXData){
 	nsi_init(i2cAddr);
 	// save locals to global variables (for interrupts)
 	byteCtr = tmpByteCtr;
 	txData = tmpTXData;
 
-	unsigned char tmpUCB0IE = UCB0IE;					// save interrupt settings
+	uint8_t tmpUCB0IE = UCB0IE;								// save interrupt settings
 	UCB0IE |= UCTXIE + UCNACKIE; 							// set I2C interrupts (transmit, NACK)
 
 	UCB0CTL1 |= UCTR + UCTXSTT;             	// I2C TX, start condition
@@ -51,13 +51,13 @@ int nsi_transmit(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char 
 
 
 // receive data
-int nsi_receive(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *tmpRXData){
+int16_t nsi_receive(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpRXData){
 	nsi_init(i2cAddr);
 	// connect local variables to globals
 	byteCtr = tmpByteCtr;
 	rxData = tmpRXData;
 
-	unsigned char tmpUCB0IE = UCB0IE;					// save interrupt settings
+	uint8_t tmpUCB0IE = UCB0IE;								// save interrupt settings
 	UCB0IE |= UCRXIE + UCNACKIE;							// set I2C interrupts (receive, NACK)
 
 	UCB0CTL1 &= ~UCTR;												// set receive mode
@@ -84,7 +84,7 @@ int nsi_receive(unsigned char i2cAddr, unsigned char tmpByteCtr, unsigned char *
 
 
 // function first transfers tmpTXData and receives tmpRXData after repeated start
-int nsi_transmit_receive(unsigned char i2cAddr, unsigned char txByteCtr, unsigned char *tmpTXData, unsigned char rxByteCtr, unsigned char *tmpRXData){
+int16_t nsi_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXData, uint8_t rxByteCtr, uint8_t *tmpRXData){
 	// transmit
 	nsi_init(i2cAddr);
 	repeatedStart = 1;
@@ -92,7 +92,7 @@ int nsi_transmit_receive(unsigned char i2cAddr, unsigned char txByteCtr, unsigne
 	byteCtr = txByteCtr;
 	txData = tmpTXData;
 
-	unsigned char tmpUCB0IE = UCB0IE;					// save interrupt settings
+	uint8_t tmpUCB0IE = UCB0IE;								// save interrupt settings
 	UCB0IE |= UCTXIE + UCNACKIE; 							// set I2C interrupts (transmit, NACK)
 
 	UCB0CTL1 |= UCTR + UCTXSTT;             	// I2C TX, start condition

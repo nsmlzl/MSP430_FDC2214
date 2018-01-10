@@ -9,6 +9,7 @@
  */
 
 #include <msp430f5529.h>
+#include <inttypes.h>
 #include "include/nsi2c.h"
 
 void error();
@@ -18,7 +19,7 @@ void ledOn();
 void ledOff();
 
 
-int main(void){
+int16_t main(void){
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 
 	// turn LEDs on
@@ -27,13 +28,13 @@ int main(void){
 /*
  * testing of own USCI Library
  */
-	int nack = 0;
-	unsigned char testTransmit[5] = {0x1, 0x1, 0x2, 0x3, 0x4};
-	unsigned char testReceive[3] = {0x0, 0x0, 0x0};
+	int16_t nack = 0;
+	uint8_t testTransmit[5] = {0x1, 0x1, 0x1, 0x2, 0x3};
+	uint8_t testReceive[3] = {0x0, 0x0, 0x0};
 
 	nack += nsi_transmit(0x50, 5, testTransmit);
 	// wait for write time of EEPROM
-	for(int i = 0; i < 160; i++){
+	for(int16_t i = 0; i < 160; i++){
 		__delay_cycles(1000);
 	}
 	nack += nsi_transmit_receive(0x50, 2, testTransmit, 3, testReceive);
