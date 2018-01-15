@@ -11,6 +11,7 @@
 #include <msp430f5529.h>
 #include <inttypes.h>
 #include "include/nsi2c.h"
+#include "include/nseeprom.h"
 
 void error();
 void redLed();
@@ -29,16 +30,42 @@ int16_t main(void){
  * testing of own USCI Library
  */
 	int16_t nack = 0;
-	uint8_t testTransmit[5] = {0x1, 0x1, 0x1, 0x2, 0x3};
-	uint8_t testReceive[3] = {0x0, 0x0, 0x0};
 
-	nack += nsi_transmit(0x50, 5, testTransmit);
+	uint8_t sendTest1[30] = {};
+	uint8_t sendTest2[128] = {};
+	uint8_t sendTest3[128] = {};
+	uint8_t readTest[50] = {};
+
+	for(uint16_t i = 0; i < 30; i++){
+		sendTest1[i] = 255;
+	}
+
+	for(uint16_t i = 0; i < 128; i++){
+		sendTest2[i] = i;
+		sendTest3[i] = i + 128;
+	}
+
+	nack += nse_write(0x0, 0x0, 30, sendTest1);
 	// wait for write time of EEPROM
 	for(int16_t i = 0; i < 160; i++){
 		__delay_cycles(1000);
 	}
-	nack += nsi_transmit_receive(0x50, 2, testTransmit, 3, testReceive);
+	nack += nse_read(0x0, 0x0, 50, readTest);
 
+	nack += nse_write(0x0, 0x14, 128, sendTest2);
+	// wait for write time of EEPROM
+	for(int16_t i = 0; i < 160; i++){
+		__delay_cycles(1000);
+	}
+	nack += nse_write(0x0, 0x94, 128, sendTest3);
+	// wait for write time of EEPROM
+	for(int16_t i = 0; i < 160; i++){
+		__delay_cycles(1000);
+	}
+	for(int i = 0; i < 6; i++){
+		nack += nse_read(0x0, 0x0 + 50 * i, 50, readTest);
+		__delay_cycles(1);
+	}
 	/*
 	while(1){
 	}
