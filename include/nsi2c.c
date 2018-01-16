@@ -136,6 +136,21 @@ int16_t nsi_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXD
 	return nackOccured;
 }
 
+
+// checks if slave i2cAddr is present
+// if returns 1 -> slave present, 0 -> slave not present / doesn't answer
+int16_t nsi_slave_present(uint8_t i2cAddr){
+	nsi_init(i2cAddr);
+
+	// send start and stop flag at the same time
+	UCB0CTL1 |= UCTR + UCTXSTT + UCTXSTP;
+	// wait for clearing of stop flag
+	while(UCB0CTL1 & UCTXSTP);
+	// check NACK flag
+	return !(UCB0IFG & UCNACKIFG);
+}
+
+
 // USCI I2C Interrupt
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
 #pragma vector = USCI_B0_VECTOR
