@@ -30,42 +30,33 @@ int16_t main(void){
  * testing of own USCI Library
  */
 	int16_t nack = 0;
+	uint8_t read = 0;
 
-	uint8_t sendTest1[30] = {};
-	uint8_t sendTest2[128] = {};
-	uint8_t sendTest3[128] = {};
-	uint8_t readTest[50] = {};
+	uint8_t zero[128] = {};
+	for(uint16_t a = 0; a < 0x100; a++){
+		nack += nse_write((uint8_t) a, 0, 128, zero);
+		nack += nse_write((uint8_t) a, 0x80, 128, zero);
+	}
+	nack += nse_read(0x0, 0x5, 1, &read);
 
-	for(uint16_t i = 0; i < 30; i++){
-		sendTest1[i] = 255;
+
+	read = 0;
+	nack += nse_read(0xFF, 0xFF, 1, &read);
+	nack += nse_single_write(0xFF, 0xFF, 0xFA);
+	nack += nse_read(0xFF, 0xFF, 1, &read);
+	nack += nse_single_write(0x05, 0x10, 0xA);
+	for(uint16_t a = 0; a < 256; a++){
+		uint8_t read2[128] = {};
+		uint8_t read3[128] = {};
+		nack += nse_read((uint8_t) a, 0x0, 128, read2);
+		nack += nse_read((uint8_t) a, 0x80, 128, read3);
+		for(uint8_t b = 0; b < 128; b++){
+			if((read2[b] != 0) || (read3[b] != 0)){
+				redLed();
+			}
+		}
 	}
 
-	for(uint16_t i = 0; i < 128; i++){
-		sendTest2[i] = i;
-		sendTest3[i] = i + 128;
-	}
-
-	nack += nse_write(0x0, 0x0, 30, sendTest1);
-	// wait for write time of EEPROM
-	for(int16_t i = 0; i < 160; i++){
-		__delay_cycles(1000);
-	}
-	nack += nse_read(0x0, 0x0, 50, readTest);
-
-	nack += nse_write(0x0, 0x14, 128, sendTest2);
-	// wait for write time of EEPROM
-	for(int16_t i = 0; i < 160; i++){
-		__delay_cycles(1000);
-	}
-	nack += nse_write(0x0, 0x94, 128, sendTest3);
-	// wait for write time of EEPROM
-	for(int16_t i = 0; i < 160; i++){
-		__delay_cycles(1000);
-	}
-	for(int i = 0; i < 6; i++){
-		nack += nse_read(0x0, 0x0 + 50 * i, 50, readTest);
-		__delay_cycles(1);
-	}
 	/*
 	while(1){
 	}
