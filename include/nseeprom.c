@@ -3,20 +3,20 @@
 static uint8_t EEPROMADDR = 0x50;
 
 
-// write array tmpData to EEPROM at address register1, register2
+// write array saveData to EEPROM at address reg1, reg2
 // this function stays on the same EEPROM page (don't try to change the 8th bit)
-int16_t nse_write(uint8_t register1, uint8_t register2, uint8_t tmpByteCtr, uint8_t *tmpData){
-	uint8_t data[tmpByteCtr + 2];
+int16_t nse_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData){
+	uint8_t data[nrBytes + 2];
 	// save register addresses to front of array
-	data[0] = register1;
-	data[1] = register2;
+	data[0] = reg1;
+	data[1] = reg2;
 	// put data behind it
-	for(uint16_t i = 0; i < tmpByteCtr; i++){
-		data[i + 2] = *tmpData;
-		tmpData++;
+	for(uint16_t i = 0; i < nrBytes; i++){
+		data[i + 2] = *saveData;
+		saveData++;
 	}
 	// send array to EEPROM
-	int16_t returnValue = nsi_transmit(EEPROMADDR, tmpByteCtr + 2, data);
+	int16_t returnValue = nsi_transmit(EEPROMADDR, nrBytes + 2, data);
 	// wait for EEPROM to finish writing, or timeout to occur
 	if(nse_wait()) return 2;
 	else return returnValue;
@@ -24,87 +24,87 @@ int16_t nse_write(uint8_t register1, uint8_t register2, uint8_t tmpByteCtr, uint
 
 
 // intelligent function that handles the problem with multiple page writing to EEPROM
-// tmpByteCtr can be huge
+// nrBytes can be huge
 // returns 3 if error occurs
-int16_t nse_intel_write(uint8_t register1, uint8_t register2, uint16_t tmpByteCtr, uint8_t *tmpData){
-	while(tmpByteCtr){
+int16_t nse_intel_write(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *saveData){
+	while(nrBytes){
 		// how much space is left in current page (last seven bits)?
-		uint16_t curByteCtr = 128 - (0x7F & register2);
+		uint16_t curByteCtr = 128 - (0x7F & reg2);
 
 		// more pages will come
-		if(tmpByteCtr > curByteCtr){
+		if(nrBytes > curByteCtr){
 			// return 3 if error occurs
-			if(nse_write(register1, register2, curByteCtr, tmpData)) return 3;
+			if(nse_write(reg1, reg2, curByteCtr, saveData)) return 3;
 			// getting data ready for next round
-			if(register2 & 0x80){
-				// 8th bit of register2 already set, so increase in register1
-				register1++;
-				register2 = 0x0;
+			if(reg2 & 0x80){
+				// 8th bit of reg2 already set, so increase in reg1
+				reg1++;
+				reg2 = 0x0;
 			}
 			else{
-				// setting 8th bit of register2
-				register2 = 0x80;
+				// setting 8th bit of reg2
+				reg2 = 0x80;
 			}
-			tmpByteCtr -= curByteCtr;
-			tmpData += curByteCtr;
+			nrBytes -= curByteCtr;
+			saveData += curByteCtr;
 		}
 
 		// sending last data set
 		else{
 			// return 3 if error occurs
-			if(nse_write(register1, register2, tmpByteCtr, tmpData)) return 3;
-			tmpByteCtr = 0;
+			if(nse_write(reg1, reg2, nrBytes, saveData)) return 3;
+			nrBytes = 0;
 		}
 	}
 	return 0;
 }
 
 
-// write single byte tmpData to EEPROM at address register1, register2
-int16_t nse_single_write(uint8_t register1, uint8_t register2, uint8_t tmpData){
-	return nse_write(register1, register2, 1, &tmpData);
+// write single byte saveData to EEPROM at address reg1, reg2
+int16_t nse_single_write(uint8_t reg1, uint8_t reg2, uint8_t saveData){
+	return nse_write(reg1, reg2, 1, &saveData);
 }
 
 
-// read tmpByteCtr elements into readData (as an array) from EEPROM at register1, register2
+// read nrBytes elements into readData (as an array) from EEPROM at reg1, reg2
 // this function stays on the same EEPROM page (don't try to change the 8th bit)
-int16_t nse_read(uint8_t register1, uint8_t register2, uint8_t tmpByteCtr, uint8_t *readData){
-	uint8_t address[2] = {register1, register2};
-	return nsi_transmit_receive(EEPROMADDR, 2, address, tmpByteCtr, readData);
+int16_t nse_read(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *readData){
+	uint8_t address[2] = {reg1, reg2};
+	return nsi_transmit_receive(EEPROMADDR, 2, address, nrBytes, readData);
 }
 
 
 // intelligent function to read data from multiple EEPROM pages (see nse_intel_write)
-// tmpByteCtr can be huge
+// nrBytes can be huge
 // returns 3 if error occurs
-int16_t nse_intel_read(uint8_t register1, uint8_t register2, uint16_t tmpByteCtr, uint8_t *readData){
-	while(tmpByteCtr){
+int16_t nse_intel_read(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *readData){
+	while(nrBytes){
 		// how much space is left in current page (last seven bits)?
-		uint16_t curByteCtr = 128 - (0x7F & register2);
+		uint16_t curByteCtr = 128 - (0x7F & reg2);
 
 		// more pages will come
-		if(tmpByteCtr > curByteCtr){
+		if(nrBytes > curByteCtr){
 			// return 3 if error occurs
-			if(nse_read(register1, register2, curByteCtr, readData)) return 3;
+			if(nse_read(reg1, reg2, curByteCtr, readData)) return 3;
 			// getting data ready for next round
-			if(register2 & 0x80){
-				// 8th bit of register2 already set, so increase in register1
-				register1++;
-				register2 = 0x0;
+			if(reg2 & 0x80){
+				// 8th bit of reg2 already set, so increase in reg1
+				reg1++;
+				reg2 = 0x0;
 			}
 			else{
-				// setting 8th bit of register2
-				register2 = 0x80;
+				// setting 8th bit of reg2
+				reg2 = 0x80;
 			}
-			tmpByteCtr -= curByteCtr;
+			nrBytes -= curByteCtr;
 			readData += curByteCtr;
 		}
 
 		// reading last data set
 		else{
 			// return 3 if error occurs
-			if(nse_read(register1, register2, tmpByteCtr, readData)) return 3;
-			tmpByteCtr = 0;
+			if(nse_read(reg1, reg2, nrBytes, readData)) return 3;
+			nrBytes = 0;
 		}
 	}
 	return 0;
