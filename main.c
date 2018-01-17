@@ -32,30 +32,19 @@ int16_t main(void){
 	int16_t nack = 0;
 	uint8_t read = 0;
 
-	uint8_t zero[128] = {};
-	for(uint16_t a = 0; a < 0x100; a++){
-		nack += nse_write((uint8_t) a, 0, 128, zero);
-		nack += nse_write((uint8_t) a, 0x80, 128, zero);
-	}
-	nack += nse_read(0x0, 0x5, 1, &read);
+	uint8_t testRead[500] = {};
+	uint8_t testRead2[128] = {};
+	uint8_t testRead3[128] = {};
+	uint8_t testRead4[128] = {};
+	uint8_t testData[256] = {};
 
-
-	read = 0;
-	nack += nse_read(0xFF, 0xFF, 1, &read);
-	nack += nse_single_write(0xFF, 0xFF, 0xFA);
-	nack += nse_read(0xFF, 0xFF, 1, &read);
-	nack += nse_single_write(0x05, 0x10, 0xA);
-	for(uint16_t a = 0; a < 256; a++){
-		uint8_t read2[128] = {};
-		uint8_t read3[128] = {};
-		nack += nse_read((uint8_t) a, 0x0, 128, read2);
-		nack += nse_read((uint8_t) a, 0x80, 128, read3);
-		for(uint8_t b = 0; b < 128; b++){
-			if((read2[b] != 0) || (read3[b] != 0)){
-				redLed();
-			}
-		}
+	for(uint16_t i = 0; i < 256; i++){
+		testData[i] = i;
 	}
+
+	nack += nse_intel_write(0x0, 0x0, 256, testRead);
+	nack += nse_intel_write(0x0, 0x81, 256, testData);
+	nack += nse_intel_read(0x0, 0x0, 500, testRead);
 
 	/*
 	while(1){

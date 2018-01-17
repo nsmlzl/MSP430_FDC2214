@@ -5,6 +5,7 @@
  * Author : Niklas Schmelzle
  *
  * TODO:
+ * - timer functions, so if no connection the program doesn't get trapped
  *
  */
 
