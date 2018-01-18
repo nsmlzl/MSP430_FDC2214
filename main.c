@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include "include/nsi2c.h"
 #include "include/nseeprom.h"
+#include "include/nsmultiplexer.h"
 
 void error();
 void redLed();
@@ -29,23 +30,12 @@ int16_t main(void){
 /*
  * testing of own USCI Library
  */
-	int16_t nack = 0;
-	uint8_t read = 0;
-
-	uint8_t testRead[500] = {};
-	uint8_t testRead2[128] = {};
-	uint8_t testRead3[128] = {};
-	uint8_t testRead4[128] = {};
-	uint8_t testData[256] = {};
-
-	for(uint16_t i = 0; i < 256; i++){
-		testData[i] = i;
+	nsm_disable(1);
+	for(uint8_t i = 0; i < 8; i++){
+		nsm_set(1, i);
+		nsm_disable(1);
+		__delay_cycles(1);
 	}
-
-	nack += nse_intel_write(0x0, 0x0, 256, testRead);
-	nack += nse_intel_write(0x0, 0x81, 256, testData);
-	nack += nse_intel_read(0x0, 0x0, 500, testRead);
-
 	/*
 	while(1){
 	}

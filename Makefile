@@ -1,5 +1,5 @@
 TARGET = main.c
-INCLUDES = include/nsi2c.c include/nsi2c.h include/nseeprom.c include/nseeprom.h
+INCLUDES = include/nsi2c.c include/nsi2c.h include/nseeprom.c include/nseeprom.h include/nsmultiplexer.c include/nsmultiplexer.h
 
 
 GCC_DIR =  ~/ti/msp430_gcc/bin
