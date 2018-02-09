@@ -1,10 +1,11 @@
 /*
  * main.c
  *
- * Created: 18.11.2017
+ * Created: 2017-11-18
  * Author : Niklas Schmelzle
  *
  * TODO:
+ *
  *
  */
 
@@ -21,7 +22,7 @@ void ledOn();
 void ledOff();
 
 
-int16_t main(void){
+uint16_t main(void){
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 
 	// turn LEDs on
@@ -31,7 +32,8 @@ int16_t main(void){
  * testing of own USCI Library
  */
 	nsm_disable(1);
-	for(uint8_t i = 0; i < 8; i++){
+	uint8_t i = 0;
+	for(i = 0; i < 8; i++){
 		nsm_set(1, i);
 		nsm_disable(1);
 		__delay_cycles(1);

@@ -1,6 +1,6 @@
 #include "nseeprom.h"
 
-static uint8_t EEPROMADDR = 0x50;
+const uint8_t EEPROMADDR = 0x50;
 
 
 // write array saveData to EEPROM at address reg1, reg2
@@ -11,7 +11,8 @@ int16_t nse_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData
 	data[0] = reg1;
 	data[1] = reg2;
 	// put data behind it
-	for(uint16_t i = 0; i < nrBytes; i++){
+	uint16_t i = 0;
+	for(i = 0; i < nrBytes; i++){
 		data[i + 2] = *saveData;
 		saveData++;
 	}

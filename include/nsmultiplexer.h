@@ -1,7 +1,7 @@
 /*
  * nsmultiplexer.h
  *
- * Created: 18.01.2018
+ * Created: 2018-01-18
  * Author : Niklas Schmelzle
  *
  * TODO:

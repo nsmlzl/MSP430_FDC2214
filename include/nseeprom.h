@@ -1,7 +1,7 @@
 /*
  * nseeprom.h
  *
- * Created: 09.01.2018
+ * Created: 2018-01-09
  * Author : Niklas Schmelzle
  *
  * TODO:

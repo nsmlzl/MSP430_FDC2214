@@ -1,7 +1,7 @@
 /*
  * nsi2c.h
  *
- * Created: 26.12.2017
+ * Created: 2017-12-26
  * Author : Niklas Schmelzle
  *
  * TODO:
