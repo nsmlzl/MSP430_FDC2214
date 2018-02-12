@@ -37,7 +37,7 @@
 /* 
  * ======== UsbPHDC.c ========
  */
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 
 #ifdef _PHDC_
 

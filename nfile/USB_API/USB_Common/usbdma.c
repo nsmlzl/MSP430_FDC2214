@@ -36,11 +36,11 @@
  */
 #include <string.h>
 
-#include "driverlib.h"
+#include "nfile/driverlib/MSP430F5xx_6xx/driverlib.h"
 
 #include "../USB_Common/device.h"
 #include "../USB_Common/defMSP430USB.h"
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 #include <string.h>
 
 #ifdef __REGISTER_MODEL__

@@ -48,8 +48,8 @@
 #include "../USB_Common/usb.h"
 #include "../USB_MSC_API/UsbMscScsi.h"
 #include "../USB_MSC_API/UsbMsc.h"
-#include "../hal.h"
-#include <descriptors.h>
+#include "nfile/hal.h"
+#include "nfile/USB_config/descriptors.h"
 #include <string.h>
 
 #ifdef _MSC_

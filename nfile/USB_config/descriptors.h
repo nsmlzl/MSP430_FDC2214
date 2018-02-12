@@ -35,7 +35,7 @@
 
 
 #include <stdint.h>
-#include "USB_API/USB_Common/usb.h"
+#include "nfile/USB_API/USB_Common/usb.h"
 
 #ifndef _DESCRIPTORS_H_
 #define _DESCRIPTORS_H_

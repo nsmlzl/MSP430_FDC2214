@@ -36,12 +36,12 @@
 /*-----------------------------------------------------------------------------+
 | Include files 
 |-----------------------------------------------------------------------------*/
-#include <USB_API/USB_Common/device.h>
-#include <USB_API/USB_Common/defMSP430USB.h>
-#include <USB_API/USB_Common/usb.h>              // USB-specific Data Structures
+#include "nfile/USB_API/USB_Common/device.h"        // Basic Type declarations
+#include "nfile/USB_API/USB_Common/defMSP430USB.h"
+#include "nfile/USB_API/USB_Common/usb.h"              // USB-specific Data Structures
 #include "descriptors.h"
-#include <USB_API/USB_MSC_API/UsbMscReq.h>
-#include <USB_API/USB_MSC_API/UsbMscScsi.h>
+#include "nfile/USB_API/USB_MSC_API/UsbMscReq.h"
+#include "nfile/USB_API/USB_MSC_API/UsbMscScsi.h"
 
 
 /*-----------------------------------------------------------------------------+

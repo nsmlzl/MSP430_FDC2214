@@ -36,15 +36,15 @@
 /*-----------------------------------------------------------------------------+
 | Include files                                                                |
 |-----------------------------------------------------------------------------*/
-#include <USB_API/USB_Common/device.h>        // Basic Type declarations
-#include <USB_API/USB_Common/defMSP430USB.h>
-#include "descriptors.h"
-#include <USB_API/USB_Common/usb.h>           //USB-specific Data Structures
-#include <USB_API/USB_Common/UsbIsr.h>
+#include "nfile/USB_API/USB_Common/device.h"        // Basic Type declarations
+#include "nfile/USB_API/USB_Common/defMSP430USB.h"
+#include "nfile/USB_config/descriptors.h"
+#include "nfile/USB_API/USB_Common/usb.h"           //USB-specific Data Structures
+#include "nfile/USB_API/USB_Common/UsbIsr.h"
 #include <string.h>
-#include <USB_API/USB_MSC_API/UsbMscStateMachine.h>
-#include <USB_API/USB_MSC_API/UsbMscScsi.h>
-#include <USB_API/USB_MSC_API/UsbMsc.h>
+#include "nfile/USB_API/USB_MSC_API/UsbMscStateMachine.h"
+#include "nfile/USB_API/USB_MSC_API/UsbMscScsi.h"
+#include "nfile/USB_API/USB_MSC_API/UsbMsc.h"
 
 /*----------------------------------------------------------------------------+
 | External Variables                                                          |

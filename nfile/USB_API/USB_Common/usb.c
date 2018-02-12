@@ -40,12 +40,12 @@
  +----------------------------------------------------------------------------*/
 
 #include <string.h>
-#include "driverlib.h"
+#include "nfile/driverlib/MSP430F5xx_6xx/driverlib.h"
 
 #include "../USB_Common/device.h"
 #include "../USB_Common/defMSP430USB.h"
 #include "../USB_Common/usb.h"      //USB-specific Data Structures
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 #ifdef _CDC_
 #include "../USB_CDC_API/UsbCdc.h"
 #endif

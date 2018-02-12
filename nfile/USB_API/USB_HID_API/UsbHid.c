@@ -40,7 +40,7 @@
 #include "../USB_Common/defMSP430USB.h"
 #include "../USB_Common/usb.h"                  //USB-specific Data Structures
 #include "UsbHid.h"
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 #include <string.h>
 #ifdef _HID_
 

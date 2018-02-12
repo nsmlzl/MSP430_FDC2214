@@ -43,7 +43,7 @@
 #include "../USB_Common/usb.h"                              //USB-specific Data Structures
 #include "UsbHid.h"
 #include "UsbHidReq.h"
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 
 #ifdef _HID_
 

@@ -36,7 +36,7 @@
  */
 #include "msp430.h"
 
-#include "driverlib.h"
+#include "nfile/driverlib/MSP430F5xx_6xx/driverlib.h"
 
 #include "USB_API/USB_Common/device.h"
 #include "USB_config/descriptors.h"

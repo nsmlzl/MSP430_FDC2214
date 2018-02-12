@@ -34,12 +34,12 @@
  * Event-handling placeholder functions.
  * All functios are called in interrupt context.*
  */
-#include "driverlib.h"
+#include "nfile/driverlib/MSP430F5xx_6xx/driverlib.h"
 
-#include "USB_API/USB_Common/device.h"
-#include "USB_API/USB_Common/defMSP430USB.h"
-#include "USB_config/descriptors.h"
-#include "USB_API/USB_Common/usb.h"
+#include "nfile/USB_API/USB_Common/device.h"        // Basic Type declarations
+#include "nfile/USB_API/USB_Common/defMSP430USB.h"
+#include "nfile/USB_config/descriptors.h"
+#include "nfile/USB_API/USB_Common/usb.h"
 
 #ifdef _CDC_
 #include "USB_API/USB_CDC_API/UsbCdc.h"
@@ -50,7 +50,7 @@
 #endif
 
 #ifdef _MSC_
-#include "USB_API/USB_MSC_API/UsbMsc.h"
+#include "nfile/USB_API/USB_MSC_API/UsbMsc.h"
 #endif
 
 #ifdef _PHDC_

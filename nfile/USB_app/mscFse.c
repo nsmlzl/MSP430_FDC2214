@@ -37,13 +37,13 @@
  */
 #include <string.h>
 #include <stdint.h>
-#include "USB_API/USB_Common/device.h"
-#include "USB_API/USB_MSC_API/UsbMsc.h"
-#include "USB_config/descriptors.h"
+#include "nfile/USB_API/USB_Common/device.h"        // Basic Type declarations
+#include "nfile/USB_API/USB_MSC_API/UsbMsc.h"
+#include "nfile/USB_config/descriptors.h"
 
 #include "FatFs/diskio.h"
 #include "FatFs/mmc.h"
-#include "USB_app/mscFse.h"
+#include "nfile/USB_app/mscFse.h"
 #include "storageVolume.h"     // Holds the emulated storage volume
 
 /*

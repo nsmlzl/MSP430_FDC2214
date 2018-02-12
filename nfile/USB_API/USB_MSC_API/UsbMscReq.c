@@ -37,7 +37,7 @@
 /* 
  * ======== UsbMscReq.c ========
  */
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 
 
 #include "../USB_Common/device.h"

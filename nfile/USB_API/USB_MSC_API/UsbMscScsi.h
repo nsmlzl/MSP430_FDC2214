@@ -37,7 +37,7 @@
 #ifndef _UMSC_SCSI_H_
 #define _UMSC_SCSI_H_
 
-#include <descriptors.h>
+#include "nfile/USB_config/descriptors.h"
 
 #ifdef __cplusplus
 extern "C"

@@ -15,6 +15,8 @@
 #include "include/nseeprom.h"
 #include "include/nsmultiplexer.h"
 
+#include "nfile/nfile.h"
+
 void error();
 void redLed();
 void greenLed();
@@ -29,15 +31,10 @@ uint16_t main(void){
 	ledOn();
 
 /*
- * testing of own USCI Library
+ * testing nfile
  */
-	nsm_disable(1);
-	uint8_t i = 0;
-	for(i = 0; i < 8; i++){
-		nsm_set(1, i);
-		nsm_disable(1);
-		__delay_cycles(1);
-	}
+	nTestfile();
+
 	/*
 	while(1){
 	}
