@@ -1,33 +1,32 @@
 /*
  * nfile.h
+ * wrapper function for publishing data array as .csv file, later the
+ * memory of the msp430 is accessible as MSC device.
+ *
+ * void nf_createCSV(...)
+ *
+ * *titleStr: title of .csv file
+ * *dataArray: from matrix[y][x]
+ * nrRows: number of rows
+ * nrColumns: number of columns
+ *
  *
  * Created: 2018-02-12
  * Author : Niklas Schmelzle
  *
+ * closely based on M1_FileSystemEmulation from TI USB-API
+ *
  * TODO:
+ * - remove TI file from drive
  *
  */
-
-
-/*
- * ======== main.c ========
- * Mass Storage with File System Emulation.
- *
- * This example demonstrates usage in which there is no file system software.
- * Instead, a FAT volume is "emulated".  Also, the entire contents of the volume
- * are not stored inside the MSP430 flash; only few blocks are
- * emulated, including the Master Boot Record, File Allocation Table, and
- * Root Directory.
- *
- +----------------------------------------------------------------------------+
- * Please refer to the Examples Guide for more details.
- *----------------------------------------------------------------------------*/
 
 #ifndef NFILE_H
 #define NFILE_H
 
 
 #include <string.h>
+#include <stdio.h>
 
 #include "nfile/driverlib/MSP430F5xx_6xx/driverlib.h"
 
@@ -45,6 +44,6 @@
 #include "hal.h"
 
 
-void nTestfile();
+void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t nrColumns);
 
 #endif

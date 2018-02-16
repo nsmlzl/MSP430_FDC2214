@@ -33,7 +33,26 @@ uint16_t main(void){
 /*
  * testing nfile
  */
-	nTestfile();
+	char *title = "number1, number2, number3\n";
+	int16_t nr[50][3];
+
+	uint16_t y = 0;
+	for(y = 0; y < 50; y++){
+		uint8_t x = 0;
+		for(x = 0; x < 3; x++){
+			nr[y][x] = x;
+		}
+	}
+	/*
+	int16_t *testPtr = &nr[0][0];
+	uint16_t z = 0;
+	for(z = 0; z < 150; z++){
+		int16_t printInt = *testPtr;
+		__delay_cycles(1);
+		testPtr++;
+	}
+	*/
+	nf_createCSV(title, &nr[0][0], 50, 3);
 
 	/*
 	while(1){

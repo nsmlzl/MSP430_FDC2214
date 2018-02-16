@@ -31,30 +31,56 @@
  * --/COPYRIGHT--*/
 
 #include "nfile.h"
-/*
- * ======== main ========
- */
-void nTestfile(){
-	WDT_A_hold(WDT_A_BASE); // Stop watchdog timer
 
-	// Minimum Vcore setting required for the USB API is PMM_CORE_LEVEL_2 .
-	PMM_setVCore(PMM_CORE_LEVEL_2);
+void nf_createMSC();
 
 
-	// ** testing
+// create .csv file from *dataArray and set MSP as MSC device
+void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t nrColumns){
 	FATFS fatfs;
 	FIL file;
-	// f_mkfs(0, 1, 1024);
+	const char *comma = ", ";
+	const char *eol = "\n";
+
 	f_mount(0, &fatfs);
-	f_open(&file, "MSP430.txt", FA_CREATE_ALWAYS | FA_WRITE);
-	TCHAR *string = "Der MSP430 ist ein toller MicroController!!!\n";
-	// uint16_t number;
-	// f_write(&file, string, 32, &number);
-	f_puts(string, &file);
-	f_puts(string, &file);
+
+	// create and open .csv file
+	f_open(&file, "data.csv", FA_CREATE_ALWAYS | FA_WRITE);
+	// put titles on top
+	f_puts(titleStr, &file);
+
+	uint16_t tmpRows = 0;
+	for(tmpRows = 0; tmpRows < nrRows; tmpRows++){
+		// print column
+		uint16_t tmpColumns = 0;
+		for(tmpColumns = 0; tmpColumns < nrColumns; tmpColumns++){
+			// convert integer to string
+			char intStr[6] = {};
+			sprintf(&intStr, "%d", *dataArray);
+			// put string into .csv file
+			f_puts(&intStr, &file);
+			dataArray++;
+			// if not end of line, put a comma behind element
+			if(tmpColumns != nrColumns - 1){
+				f_puts(comma, &file);
+			}
+		}
+		// end of line -> eof char
+		f_puts(eol, &file);
+	}
+
+
 	f_close(&file);
 	f_mount(0, NULL);
 
+	nf_createMSC();
+}
+
+
+// set MSP430 as MSC device
+void nf_createMSC(){
+	// Minimum Vcore setting required for the USB API is PMM_CORE_LEVEL_2 .
+	PMM_setVCore(PMM_CORE_LEVEL_2);
 
 	USBHAL_initPorts();           // Config GPIOS for low-power (output low)
 	USBHAL_initClocks(8000000);   // Config clocks. MCLK=SMCLK=FLL=8MHz; ACLK=REFO=32kHz
