@@ -44,6 +44,10 @@ void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t
 
 	f_mount(0, &fatfs);
 
+	// remove example file from TI
+	char *pathFileToRemove = "data_log.txt";
+	f_unlink(pathFileToRemove);
+
 	// create and open .csv file
 	f_open(&file, "data.csv", FA_CREATE_ALWAYS | FA_WRITE);
 	// put titles on top
