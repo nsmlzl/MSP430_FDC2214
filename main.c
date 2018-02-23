@@ -15,6 +15,7 @@
 #include "include/ni2c.h"
 #include "include/neeprom.h"
 #include "include/nmultiplexer.h"
+#include "include/nfdc.h"
 
 #include "nfile/nfile.h"
 
@@ -32,19 +33,9 @@ uint16_t main(void){
 	ledOn();
 
 /*
- * testing new naming of files
+ * testing fdc
  */
-	uint8_t nack = 0;
-
-	uint8_t testWrite[200] = {};
-	uint8_t i = 0;
-	for(i = 0; i < 200; i++){
-		testWrite[i] = 200 - i;
-	}
-	nack += ne_intel_write(0, 0, 200, testWrite);
-
-	uint8_t testRead[250] = {};
-	nack += ne_intel_read(0, 0, 250, testRead);
+	uint8_t slave = nc_init();
 
 	/*
 	while(1){

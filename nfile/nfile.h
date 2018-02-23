@@ -17,7 +17,6 @@
  * closely based on M1_FileSystemEmulation from TI USB-API
  *
  * TODO:
- * - remove TI file from drive
  *
  */
 
