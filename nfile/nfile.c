@@ -60,9 +60,9 @@ void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t
 		for(tmpColumns = 0; tmpColumns < nrColumns; tmpColumns++){
 			// convert integer to string
 			char intStr[6] = {};
-			sprintf(&intStr, "%d", *dataArray);
+			sprintf(intStr, "%d", *dataArray);
 			// put string into .csv file
-			f_puts(&intStr, &file);
+			f_puts(intStr, &file);
 			dataArray++;
 			// if not end of line, put a comma behind element
 			if(tmpColumns != nrColumns - 1){

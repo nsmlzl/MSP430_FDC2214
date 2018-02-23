@@ -34,7 +34,6 @@ uint16_t main(void){
 /*
  * testing new naming of files
  */
-
 	uint8_t nack = 0;
 
 	uint8_t testWrite[200] = {};
