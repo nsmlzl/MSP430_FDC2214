@@ -5,7 +5,6 @@
  * Author : Niklas Schmelzle
  *
  * TODO:
- * - improve nse_write function (copying, etc) with pointers
  *
  */
 
@@ -14,6 +13,7 @@
 
 #include <msp430f5529.h>
 #include <inttypes.h>
+#include <stdlib.h>
 #include "ni2c.h"
 
 int16_t ne_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData);

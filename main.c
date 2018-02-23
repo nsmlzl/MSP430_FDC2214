@@ -11,6 +11,7 @@
 
 #include <msp430f5529.h>
 #include <inttypes.h>
+#include <stdlib.h>
 #include "include/ni2c.h"
 #include "include/neeprom.h"
 #include "include/nmultiplexer.h"
@@ -31,28 +32,20 @@ uint16_t main(void){
 	ledOn();
 
 /*
- * testing nfile
+ * testing new naming of files
  */
-	char *title = "number1, number2, number3\n";
-	int16_t nr[50][3];
 
-	uint16_t y = 0;
-	for(y = 0; y < 50; y++){
-		uint8_t x = 0;
-		for(x = 0; x < 3; x++){
-			nr[y][x] = x;
-		}
+	uint8_t nack = 0;
+
+	uint8_t testWrite[200] = {};
+	uint8_t i = 0;
+	for(i = 0; i < 200; i++){
+		testWrite[i] = 200 - i;
 	}
-	/*
-	int16_t *testPtr = &nr[0][0];
-	uint16_t z = 0;
-	for(z = 0; z < 150; z++){
-		int16_t printInt = *testPtr;
-		__delay_cycles(1);
-		testPtr++;
-	}
-	*/
-	nf_createCSV(title, &nr[0][0], 50, 3);
+	nack += ne_intel_write(0, 0, 200, testWrite);
+
+	uint8_t testRead[250] = {};
+	nack += ne_intel_read(0, 0, 250, testRead);
 
 	/*
 	while(1){

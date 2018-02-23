@@ -5,19 +5,25 @@ const uint8_t EEPROMADDR = 0x50;
 
 // write array saveData to EEPROM at address reg1, reg2
 // this function stays on the same EEPROM page (don't try to change the 8th bit)
-	uint8_t data[nrBytes + 2];
 int16_t ne_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData){
+	const uint8_t dataBytes = nrBytes + 2;
+	uint8_t *data = (uint8_t *) malloc(dataBytes * sizeof(uint8_t));
+	uint8_t *dataPtr = data;
 	// save register addresses to front of array
-	data[0] = reg1;
-	data[1] = reg2;
+	*dataPtr = reg1;
+	dataPtr++;
+	*dataPtr = reg2;
+	dataPtr++;
 	// put data behind it
 	uint16_t i = 0;
 	for(i = 0; i < nrBytes; i++){
-		data[i + 2] = *saveData;
+		*dataPtr = *saveData;
+		dataPtr++;
 		saveData++;
 	}
 	// send array to EEPROM
 	int16_t returnValue = ni_transmit(EEPROMADDR, nrBytes + 2, data);
+	free(data);
 	// wait for EEPROM to finish writing, or timeout to occur
 	if(ne_wait()) return 2;
 	else return returnValue;
