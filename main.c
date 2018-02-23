@@ -11,9 +11,9 @@
 
 #include <msp430f5529.h>
 #include <inttypes.h>
-#include "include/nsi2c.h"
-#include "include/nseeprom.h"
-#include "include/nsmultiplexer.h"
+#include "include/ni2c.h"
+#include "include/neeprom.h"
+#include "include/nmultiplexer.h"
 
 #include "nfile/nfile.h"
 

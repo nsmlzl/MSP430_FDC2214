@@ -1,4 +1,4 @@
-#include "nsi2c.h"
+#include "ni2c.h"
 
 volatile uint8_t *txData;
 volatile uint8_t *rxData;
@@ -8,7 +8,7 @@ int16_t repeatedStart;
 
 
 // init usci i2c module
-void nsi_init(uint8_t i2cAddr){
+void ni_init(uint8_t i2cAddr){
 	// init I2C
 	P3SEL |= 0x03;                            // Assign I2C pins to USCI_B0
 	UCB0CTL1 |= UCSWRST;                      // Enable SW reset
@@ -26,8 +26,8 @@ void nsi_init(uint8_t i2cAddr){
 
 
 // transmit data
-int16_t nsi_transmit(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpTXData){
-	nsi_init(i2cAddr);
+int16_t ni_transmit(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpTXData){
+	ni_init(i2cAddr);
 	// save locals to global variables (for interrupts)
 	byteCtr = tmpByteCtr;
 	txData = tmpTXData;
@@ -51,8 +51,8 @@ int16_t nsi_transmit(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpTXData){
 
 
 // receive data
-int16_t nsi_receive(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpRXData){
-	nsi_init(i2cAddr);
+int16_t ni_receive(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpRXData){
+	ni_init(i2cAddr);
 	// connect local variables to globals
 	byteCtr = tmpByteCtr;
 	rxData = tmpRXData;
@@ -84,9 +84,9 @@ int16_t nsi_receive(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpRXData){
 
 
 // function first transfers tmpTXData and receives tmpRXData after repeated start
-int16_t nsi_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXData, uint8_t rxByteCtr, uint8_t *tmpRXData){
+int16_t ni_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXData, uint8_t rxByteCtr, uint8_t *tmpRXData){
 	// transmit
-	nsi_init(i2cAddr);
+	ni_init(i2cAddr);
 	repeatedStart = 1;
 	// save locals to global variables (for interrupts)
 	byteCtr = txByteCtr;
@@ -139,8 +139,8 @@ int16_t nsi_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXD
 
 // checks if slave i2cAddr is present
 // if returns 1 -> slave present, 0 -> slave not present / doesn't answer
-int16_t nsi_slave_present(uint8_t i2cAddr){
-	nsi_init(i2cAddr);
+int16_t ni_slave_present(uint8_t i2cAddr){
+	ni_init(i2cAddr);
 
 	// send start and stop flag at the same time
 	UCB0CTL1 |= UCTR + UCTXSTT + UCTXSTP;

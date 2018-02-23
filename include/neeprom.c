@@ -1,12 +1,12 @@
-#include "nseeprom.h"
+#include "neeprom.h"
 
 const uint8_t EEPROMADDR = 0x50;
 
 
 // write array saveData to EEPROM at address reg1, reg2
 // this function stays on the same EEPROM page (don't try to change the 8th bit)
-int16_t nse_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData){
 	uint8_t data[nrBytes + 2];
+int16_t ne_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData){
 	// save register addresses to front of array
 	data[0] = reg1;
 	data[1] = reg2;
@@ -17,9 +17,9 @@ int16_t nse_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData
 		saveData++;
 	}
 	// send array to EEPROM
-	int16_t returnValue = nsi_transmit(EEPROMADDR, nrBytes + 2, data);
+	int16_t returnValue = ni_transmit(EEPROMADDR, nrBytes + 2, data);
 	// wait for EEPROM to finish writing, or timeout to occur
-	if(nse_wait()) return 2;
+	if(ne_wait()) return 2;
 	else return returnValue;
 }
 
@@ -27,7 +27,7 @@ int16_t nse_write(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *saveData
 // intelligent function that handles the problem with multiple page writing to EEPROM
 // nrBytes can be huge
 // returns 3 if error occurs
-int16_t nse_intel_write(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *saveData){
+int16_t ne_intel_write(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *saveData){
 	while(nrBytes){
 		// how much space is left in current page (last seven bits)?
 		uint16_t curByteCtr = 128 - (0x7F & reg2);
@@ -35,7 +35,7 @@ int16_t nse_intel_write(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *s
 		// more pages will come
 		if(nrBytes > curByteCtr){
 			// return 3 if error occurs
-			if(nse_write(reg1, reg2, curByteCtr, saveData)) return 3;
+			if(ne_write(reg1, reg2, curByteCtr, saveData)) return 3;
 			// getting data ready for next round
 			if(reg2 & 0x80){
 				// 8th bit of reg2 already set, so increase in reg1
@@ -53,7 +53,7 @@ int16_t nse_intel_write(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *s
 		// sending last data set
 		else{
 			// return 3 if error occurs
-			if(nse_write(reg1, reg2, nrBytes, saveData)) return 3;
+			if(ne_write(reg1, reg2, nrBytes, saveData)) return 3;
 			nrBytes = 0;
 		}
 	}
@@ -62,23 +62,23 @@ int16_t nse_intel_write(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *s
 
 
 // write single byte saveData to EEPROM at address reg1, reg2
-int16_t nse_single_write(uint8_t reg1, uint8_t reg2, uint8_t saveData){
-	return nse_write(reg1, reg2, 1, &saveData);
+int16_t ne_single_write(uint8_t reg1, uint8_t reg2, uint8_t saveData){
+	return ne_write(reg1, reg2, 1, &saveData);
 }
 
 
 // read nrBytes elements into readData (as an array) from EEPROM at reg1, reg2
 // this function stays on the same EEPROM page (don't try to change the 8th bit)
-int16_t nse_read(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *readData){
+int16_t ne_read(uint8_t reg1, uint8_t reg2, uint8_t nrBytes, uint8_t *readData){
 	uint8_t address[2] = {reg1, reg2};
-	return nsi_transmit_receive(EEPROMADDR, 2, address, nrBytes, readData);
+	return ni_transmit_receive(EEPROMADDR, 2, address, nrBytes, readData);
 }
 
 
-// intelligent function to read data from multiple EEPROM pages (see nse_intel_write)
+// intelligent function to read data from multiple EEPROM pages (see ne_intel_write)
 // nrBytes can be huge
 // returns 3 if error occurs
-int16_t nse_intel_read(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *readData){
+int16_t ne_intel_read(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *readData){
 	while(nrBytes){
 		// how much space is left in current page (last seven bits)?
 		uint16_t curByteCtr = 128 - (0x7F & reg2);
@@ -86,7 +86,7 @@ int16_t nse_intel_read(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *re
 		// more pages will come
 		if(nrBytes > curByteCtr){
 			// return 3 if error occurs
-			if(nse_read(reg1, reg2, curByteCtr, readData)) return 3;
+			if(ne_read(reg1, reg2, curByteCtr, readData)) return 3;
 			// getting data ready for next round
 			if(reg2 & 0x80){
 				// 8th bit of reg2 already set, so increase in reg1
@@ -104,7 +104,7 @@ int16_t nse_intel_read(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *re
 		// reading last data set
 		else{
 			// return 3 if error occurs
-			if(nse_read(reg1, reg2, nrBytes, readData)) return 3;
+			if(ne_read(reg1, reg2, nrBytes, readData)) return 3;
 			nrBytes = 0;
 		}
 	}
@@ -115,17 +115,17 @@ int16_t nse_intel_read(uint8_t reg1, uint8_t reg2, uint16_t nrBytes, uint8_t *re
 
 // function checks if EEPROM is ready for communication
 // when eeprom ready -> returns 1, when not -> 0
-int16_t nse_ready(){
-	return nsi_slave_present(0x50);
+int16_t ne_ready(){
+	return ni_slave_present(0x50);
 }
 
 
 // function blocks as long EEPROM isn't ready
 // returns 1 if device doesn't answer until timeout
-int16_t nse_wait(){
+int16_t ne_wait(){
 	// check if EEPROM is ready
 	uint16_t timeOut = 0;
-	while(!nse_ready()){
+	while(!ne_ready()){
 		timeOut++;
 		__delay_cycles(1000);
 		// check for timeout
