@@ -34,7 +34,7 @@ uint16_t main(void){
  * testing nfile
  */
 	char *title = "number1, number2, number3\n";
-	int16_t nr[50][3];
+	uint16_t nr[50][3];
 
 	uint16_t y = 0;
 	for(y = 0; y < 50; y++){
