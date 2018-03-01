@@ -84,6 +84,7 @@ int16_t ni_receive(uint8_t i2cAddr, uint8_t tmpByteCtr, uint8_t *tmpRXData){
 
 
 // function first transfers tmpTXData and receives tmpRXData after repeated start
+// if return 1 -> NACK occured; device not connected?
 int16_t ni_transmit_receive(uint8_t i2cAddr, uint8_t txByteCtr, uint8_t *tmpTXData, uint8_t rxByteCtr, uint8_t *tmpRXData){
 	// transmit
 	ni_init(i2cAddr);

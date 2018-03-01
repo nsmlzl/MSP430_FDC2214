@@ -5,6 +5,7 @@
  * Author : Niklas Schmelzle
  *
  * TODO:
+ * -> defining exact chx_rcount / chx_settlecount / idrive
  *
  */
 
@@ -16,5 +17,6 @@
 #include "ni2c.h"
 
 uint8_t nc_init();
+uint8_t nc_get_data(uint32_t *dataPtr);
 
 #endif

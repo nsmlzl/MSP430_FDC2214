@@ -12,6 +12,7 @@
 #include <msp430f5529.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <math.h>
 #include "include/ni2c.h"
 #include "include/neeprom.h"
 #include "include/nmultiplexer.h"
@@ -35,8 +36,17 @@ uint16_t main(void){
 /*
  * testing fdc
  */
-	uint8_t slave = nc_init();
+	uint8_t err = 0;
+	uint32_t tmpFreq[4] = {};
+	err += nc_init();
+	err += nc_get_data(tmpFreq);
 
+	// calculate capacity
+	double dbFreq = 40000000 * (double) tmpFreq[3] / pow(2, 28);
+	double capacity = 1.0 / (18.41 * pow(10, -6)) / pow(dbFreq * 2 * 3.14159265358979323846, 2);
+	// capacity -= 48.9 * pow(10, -12);
+	// round value to 10^-14
+	capacity = nearbyint(capacity * pow(10, 15));
 	/*
 	while(1){
 	}
