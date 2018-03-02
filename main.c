@@ -38,12 +38,13 @@ uint16_t main(void){
 	uint8_t err = 0;
 	uint32_t tmpCapacity = 0;
 	err += nc_init();
-	err += nc_get_capacity(&tmpCapacity, 3);
 
-	/*
 	while(1){
+
+		tmpCapacity = 0;
+		err += nc_get_capacity(&tmpCapacity, 3);
+
 	}
-	*/
 
 	ledOff();
 	return 0;

@@ -3,28 +3,43 @@
 void nc_set_interrupt_port();
 
 const uint8_t FDCADDR = 0x2A;
+const uint8_t IDRIVE[4] = {0x60, 0x60, 0x60, 0x60};
+const uint8_t MUXCONFIG[4] = {0x0D, 0x09, 0x09, 0x09};
+const double INDUCT[4] = {18.41, 963.7, 1003.0, 1012.0};
+volatile uint8_t noInterrupt = 1;
 
 
 uint8_t nc_init(){
 	uint8_t err = 0;
+	noInterrupt = 1;
 
 	// reset device
 	uint8_t resetDevice[3] = {0x1C, 0x80, 0x00};
 	err += ni_transmit(FDCADDR, 3, resetDevice);
 
-	// channel 3: 8 MHz
-	// setting chx_rcount (to max = 0xFFFF)
-	uint8_t rcount[3] = {0x0B, 0xFF, 0xFF};
-	err += ni_transmit(FDCADDR, 3, rcount);
-	// setting chx_settlcount (to 0x400 from GUI; alot higher than needed)
-	uint8_t settlecount[3] = {0x13, 0x04, 0x00};
-	err += ni_transmit(FDCADDR, 3, settlecount);
-	// setting clock divider (chx_fin_sel = 0b01, chx_fref_divider = 0b1)
-	uint8_t clockdivider[3] = {0x17, 0x10, 0x01};
-	err += ni_transmit(FDCADDR, 3, clockdivider);
-	// setting idrive (ch3 = 12, 1.2V < A < 1.8V)
-	uint8_t idrive[3] = {0x21, 0x60, 0x00};
-	err += ni_transmit(FDCADDR, 3, idrive);
+	// channel 0: 6 MHz
+	// channel 1: 100 kHz
+	// channel 2: 50 kHz
+	// channel 3: 20 kHz
+
+	// configure chx_rcount, chx_settlecount, clock dividers and idrive
+	// chx_rcount, chx_settlecount and clock dividers the same for all
+	// four channels
+	uint8_t channel = 0;
+	for(channel = 0; channel < 4; channel++){
+		// setting chx_rcount (to max = 0xFFFF)
+		uint8_t rcount[3] = {0x08 + channel, 0xFF, 0xFF};
+		err += ni_transmit(FDCADDR, 3, rcount);
+		// setting chx_settlcount (to 0x400 from GUI; alot higher than needed)
+		uint8_t settlecount[3] = {0x10 + channel, 0x04, 0x00};
+		err += ni_transmit(FDCADDR, 3, settlecount);
+		// setting clock divider (chx_fin_sel = 0b01, chx_fref_divider = 0b1)
+		uint8_t clockdivider[3] = {0x14 + channel, 0x10, 0x01};
+		err += ni_transmit(FDCADDR, 3, clockdivider);
+		// setting idrive (ch3 = 12, 1.2V < A < 1.8V)
+		uint8_t idrive[3] = {0x1E + channel, IDRIVE[channel], 0x00};
+		err += ni_transmit(FDCADDR, 3, idrive);
+	}
 
 	// setting status register (amplitude warnings and interrupt for new data)
 	uint8_t statusconf[3] = {0x19, 0x18, 0x1};
@@ -39,11 +54,6 @@ uint8_t nc_init(){
 	// -> single channel measurement for channel 3
 	uint8_t config[3] = {0x1A, 0x3E, 0x01};
 	err += ni_transmit(FDCADDR, 3, config);
-
-	// read status to clear int
-	uint8_t statusAddr = 0x18;
-	uint8_t statusRx[2] = {};
-	// err += ni_transmit_receive(FDCADDR, 1, &statusAddr, 2, statusRx);
 
 	return err;
 }
@@ -85,6 +95,12 @@ uint8_t nc_get_data(uint32_t *dataPtr, uint8_t channel){
 // measure capacity on channel
 uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel){
 	uint8_t err = 0;
+	uint8_t noInterrupt = 1;
+
+	// set appropiate deglitch filter
+	uint8_t muxconf[3] = {0x1B, 0x02, MUXCONFIG[channel]};
+	err += ni_transmit(FDCADDR, 3, muxconf);
+
 	// activate interrupt port
 	nc_set_interrupt_port();
 
@@ -93,7 +109,9 @@ uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel){
 	uint8_t config[3] = {0x1A, upperBit, 0x01};
 	err += ni_transmit(FDCADDR, 3, config);
 
-	__bis_SR_register(LPM0_bits + GIE);     // Enter LPM0, enable interrupts
+	if(noInterrupt){
+		__bis_SR_register(LPM0_bits + GIE);     // Enter LPM0, enable interrupts
+	}
 
 	// get data
 	uint32_t freqData = 0;
@@ -101,8 +119,8 @@ uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel){
 
 	// calculate capacity
 	double dbFreq = 40000000 * (double) freqData / pow(2, 28);
-	double dbCapacity = 1.0 / (18.41 * pow(10, -6)) / pow(dbFreq * 2 * 3.14159265358979323846, 2);
-	// round value to 10^-15, print as femto Fahrrad
+	double dbCapacity = 1.0 / (INDUCT[channel] * pow(10, -6)) / pow(dbFreq * 2 * 3.14159265358979323846, 2);
+	// round value to 10^-15, print as femto farad
 	*capacity = (uint32_t) nearbyint(dbCapacity * pow(10, 15));
 
 	// put FDC to sleep
@@ -119,10 +137,10 @@ void nc_set_interrupt_port(){
 	P1DIR &= ~BIT3;
 	// set etch select for P1.3 (high to low)
 	P1IES |= BIT3;
-	// set interrupt for P1.3
-	P1IE |= BIT3;
 	// reset old interrupt for P1.3
 	P1IFG &= ~(BIT3);
+	// set interrupt for P1.3
+	P1IE |= BIT3;
 }
 
 
@@ -131,5 +149,6 @@ void nc_set_interrupt_port(){
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(){
 	P1IE &= ~BIT3;														// unset interrupt
+	noInterrupt = 0;													// interrupt has already occured
 	__bic_SR_register_on_exit(LPM0_bits);
 }
