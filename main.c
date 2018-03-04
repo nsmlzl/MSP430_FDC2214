@@ -20,51 +20,64 @@
 #include "nfile/nfile.h"
 
 void error();
-void redLed();
-void greenLed();
-void ledOn();
-void ledOff();
+void red_led();
+void green_led();
+void led_on();
+void led_off();
 
 // timer
-void timerStart(uint16_t measurementPeriod);
-void timerStop();
+void timer_start(uint16_t measurementPeriod);
+void timer_stop();
+
+// button interrupt P2.1
+void btn_interrupt_init();
+
 
 volatile uint32_t milliSeconds = 0;
+volatile uint8_t stpMeasurement = 0;
+volatile uint8_t err = 0;
+
+uint8_t currentlyMeasuring = 0;
+
 
 
 uint16_t main(void){
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 
-	// turn LEDs on
-	ledOn();
+	led_on();
+	btn_interrupt_init();
+
 
 /*
  * testing fdc
  */
-	/*
-	uint8_t err = 0;
+	uint32_t data[100][2] = {};
+	uint8_t counter = 0;
+
 	uint32_t tmpCapacity = 0;
 	err += nc_init();
 
-	while(1){
+	timer_start(500);
+	while(!stpMeasurement){
+		// so interrupt knows intervall is too fast
+		currentlyMeasuring = 1;
+
 
 		tmpCapacity = 0;
 		err += nc_get_capacity(&tmpCapacity, 0);
 
+		data[counter][0] = milliSeconds;
+		data[counter][1] = tmpCapacity;
+		counter++;
+
+
+		currentlyMeasuring = 0;
+		__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
 	}
-	*/
 
-/*
- * testing timer
- */
+	timer_stop();
+	led_off();
 
-	timerStart(1000);
-	__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
-	__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
-	__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
-	timerStop();
-
-	ledOff();
 	return 0;
 }
 
@@ -72,12 +85,12 @@ uint16_t main(void){
 // Led function
 // Error function turns red LED on
 void error(){
-	redLed();
+	red_led();
 }
 
 
 // Function turns red LED on
-void redLed(){
+void red_led(){
 	P1DIR |= 0x1;
 	P1OUT |= 0x1;
 	P4OUT &= ~(0x1 << 7);
@@ -85,7 +98,7 @@ void redLed(){
 
 
 // Function turns green LED on
-void greenLed(){
+void green_led(){
 	P4DIR |= 0x80;
 	P4OUT |= 0x80;
 	P1OUT &= ~0x1;
@@ -93,7 +106,7 @@ void greenLed(){
 
 
 // Function turns both LED on
-void ledOn(){
+void led_on(){
 	P1DIR |= 0x1;
 	P1OUT |= 0x1;
 	P4DIR |= 0x80;
@@ -102,14 +115,14 @@ void ledOn(){
 
 
 // Function turns both LED off
-void ledOff(){
+void led_off(){
 	P1OUT &= ~0x1;
 	P4OUT &= ~(0x1 << 7);
 }
 
 
 // timer init for x-axis and intervall measurement timer
-void timerStart(uint16_t measurementPeriod){
+void timer_start(uint16_t measurementPeriod){
 	milliSeconds = 0;
 	// timer A0.0 for x-axis
 	TA0CCTL0 = CCIE;
@@ -129,7 +142,7 @@ void timerStart(uint16_t measurementPeriod){
 
 
 // stop timer A0 and A1 (both timers)
-void timerStop(){
+void timer_stop(){
 	TA0CCTL0 &= ~CCIE;
 	TA1CCTL0 &= ~CCIE;
 }
@@ -148,4 +161,30 @@ __interrupt void TIMER1_A0_ISR(){
 	__bic_SR_register_on_exit(LPM0_bits);
 
 	// check if old measurement wasn't completed -> error
+	// intervall would be too fast for measurement, if this happens
+	if(currentlyMeasuring){
+		err = 20;
+	}
+}
+
+
+// init button interrupt p2.1
+void btn_interrupt_init(){
+	// set P2.1 to input
+	P2DIR &= ~BIT1;
+	// set etch select for P2.1 (high to low)
+	P2IES |= BIT1;
+	// reset old interrupt for P2.1
+	P2IFG &= ~BIT1;
+	// set interrupt for P2.1
+	P2IE |= BIT1;
+}
+
+
+// interrupt function for port2
+// (P2.1)
+#pragma vector = PORT2_VECTOR
+__interrupt void PORT_2(){
+	stpMeasurement = 1;
+	P2IE &= ~BIT1;														// only one single interrupt
 }

@@ -77,7 +77,7 @@ uint8_t nc_get_data(uint32_t *dataPtr, uint8_t channel){
 	*dataPtr = 0;															// init ptr to zero
 	// check error flags in data byte for channel
 	if(dataRx[0] & 0x30){
-		err = 0xFF;
+		err = 30;
 	}
 	// use only the last 4 bits (others aren't data)
 	dataRx[0] = dataRx[0] & 0xF;
