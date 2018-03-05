@@ -92,8 +92,10 @@ uint8_t nc_get_data(uint32_t *dataPtr, uint8_t channel){
 }
 
 
-// measure capacity on channel
-uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel){
+// measure frequency on channel
+// (capacity is proportional and will be calculated with matlab
+// calculations would take 230ms each when calculated at msp430)
+uint8_t nc_get_freq(uint32_t *freqData, uint8_t channel){
 	uint8_t err = 0;
 	uint8_t noInterrupt = 1;
 
@@ -114,14 +116,16 @@ uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel){
 	}
 
 	// get data
-	uint32_t freqData = 0;
-	err += nc_get_data(&freqData, channel);
+	*freqData = 0;
+	err += nc_get_data(freqData, channel);
 
-	// calculate capacity
+	// calculate capacity (takes too long)
+	/*
 	double dbFreq = 40000000 * (double) freqData / pow(2, 28);
 	double dbCapacity = 1.0 / (INDUCT[channel] * pow(10, -6)) / pow(dbFreq * 2 * 3.14159265358979323846, 2);
 	// round value to 10^-15, print as femto farad
 	*capacity = (uint32_t) nearbyint(dbCapacity * pow(10, 15));
+	*/
 
 	// put FDC to sleep
 	config[1] = 0x3E;
@@ -135,6 +139,10 @@ uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel){
 void nc_set_interrupt_port(){
 	// set P1.3 to input
 	P1DIR &= ~BIT3;
+	// enable P1.3 internal resistance
+	P1REN |= BIT3;
+	// set P1.3 as pull-Up resistance
+	P1OUT |= BIT3;
 	// set etch select for P1.3 (high to low)
 	P1IES |= BIT3;
 	// reset old interrupt for P1.3

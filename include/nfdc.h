@@ -19,6 +19,6 @@
 
 uint8_t nc_init();
 uint8_t nc_get_data(uint32_t *dataPtr, uint8_t channel);
-uint8_t nc_get_capacity(uint32_t *capacity, uint8_t channel);
+uint8_t nc_get_freq(uint32_t *freqData, uint8_t channel);
 
 #endif

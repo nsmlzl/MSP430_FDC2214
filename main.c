@@ -54,20 +54,20 @@ uint16_t main(void){
 	uint32_t data[100][2] = {};
 	uint8_t counter = 0;
 
-	uint32_t tmpCapacity = 0;
+	uint32_t tmpFreq = 0;
 	err += nc_init();
 
-	timer_start(500);
+	timer_start(50);
 	while(!stpMeasurement){
 		// so interrupt knows intervall is too fast
 		currentlyMeasuring = 1;
 
 
-		tmpCapacity = 0;
-		err += nc_get_capacity(&tmpCapacity, 0);
+		tmpFreq = 0;
+		err += nc_get_freq(&tmpFreq, 0);
 
 		data[counter][0] = milliSeconds;
-		data[counter][1] = tmpCapacity;
+		data[counter][1] = tmpFreq;
 		counter++;
 
 
@@ -172,6 +172,10 @@ __interrupt void TIMER1_A0_ISR(){
 void btn_interrupt_init(){
 	// set P2.1 to input
 	P2DIR &= ~BIT1;
+	// enable P2.1 internal resistance
+	P2REN |= BIT1;
+	// set P2.1 as pull-Up resistance
+	P2OUT |= BIT1;
 	// set etch select for P2.1 (high to low)
 	P2IES |= BIT1;
 	// reset old interrupt for P2.1
