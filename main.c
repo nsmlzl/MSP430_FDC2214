@@ -12,6 +12,8 @@
 #include <msp430f5529.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "include/ni2c.h"
 #include "include/neeprom.h"
 #include "include/nmultiplexer.h"
@@ -32,6 +34,8 @@ void timer_stop();
 // button interrupt P2.1
 void btn_interrupt_init();
 
+// measurement functions
+void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t intervall);
 
 volatile uint32_t milliSeconds = 0;
 volatile uint8_t stpMeasurement = 0;
@@ -47,28 +51,47 @@ uint16_t main(void){
 	led_on();
 	btn_interrupt_init();
 
+	single_channel_measurement(3, 250, 80);
 
-/*
- * testing fdc
- */
-	uint32_t data[100][2] = {};
-	uint8_t counter = 0;
+	// led_off();
+
+	return 0;
+}
+
+
+void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t intervall){
+	// set multiplexer for sChannel
+	err = nm_set(0, sChannel);
+	err = nm_set(1, sChannel);
 
 	uint32_t tmpFreq = 0;
-	err += nc_init();
 
-	timer_start(50);
-	while(!stpMeasurement){
+	// init fdc
+	err = nc_init();
+
+	// init .csv file
+	char *title = "time [ms], frquency data\n";
+	nf_init(title);
+
+	// start both timer interrupts
+	timer_start(intervall);
+	uint8_t counter = 0;
+	for(counter = 0; counter < nrData; counter++){
 		// so interrupt knows intervall is too fast
 		currentlyMeasuring = 1;
 
+		// stop measurement after button press
+		if(stpMeasurement){
+			break;
+		}
 
 		tmpFreq = 0;
-		err += nc_get_freq(&tmpFreq, 0);
+		err = nc_get_freq(&tmpFreq, sChannel);
 
-		data[counter][0] = milliSeconds;
-		data[counter][1] = tmpFreq;
-		counter++;
+		// create .csv line
+		char tmpLine[24] = {};
+		sprintf(tmpLine, "%lu, %lu\n", milliSeconds, tmpFreq);
+		nf_add_line(tmpLine);
 
 
 		currentlyMeasuring = 0;
@@ -76,9 +99,14 @@ uint16_t main(void){
 	}
 
 	timer_stop();
-	led_off();
+	if(err){
+		red_led();
+	}
+	else{
+		led_off();
+	}
 
-	return 0;
+	nf_publish();
 }
 
 

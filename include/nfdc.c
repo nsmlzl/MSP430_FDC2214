@@ -3,9 +3,9 @@
 void nc_set_interrupt_port();
 
 const uint8_t FDCADDR = 0x2A;
-const uint8_t IDRIVE[4] = {0x60, 0x60, 0x60, 0x60};
+const uint8_t IDRIVE[4] = {0xA0, 0x60, 0x60, 0x78};
 const uint8_t MUXCONFIG[4] = {0x0D, 0x09, 0x09, 0x09};
-const double INDUCT[4] = {18.41, 963.7, 1003.0, 1012.0};
+// const double INDUCT[4] = {18.41, 963.7, 1003.0, 1012.0};
 volatile uint8_t noInterrupt = 1;
 
 

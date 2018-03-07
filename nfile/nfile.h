@@ -43,6 +43,12 @@
 #include "hal.h"
 
 
-void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t nrColumns);
+// three functions instead for nf_createCSV()
+void nf_init(char *titleStr);
+void nf_add_line(char *line);
+void nf_publish();
+
+// all in one function
+void nf_createCSV(char *titleStr, uint32_t *dataArray, uint16_t nrRows, uint16_t nrColumns);
 
 #endif

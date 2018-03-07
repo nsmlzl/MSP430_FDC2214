@@ -34,14 +34,42 @@
 
 void nf_createMSC();
 
+FATFS fatfs;
+FIL file;
+const char *comma = ", ";
+const char *eol = "\n";
+
+
+// init for custom csv creation
+void nf_init(char *titleStr){
+	f_mount(0, &fatfs);
+
+	// remove example file from TI
+	char *pathFileToRemove = "data_log.txt";
+	f_unlink(pathFileToRemove);
+
+	// create and open .csv file
+	f_open(&file, "data.csv", FA_CREATE_ALWAYS | FA_WRITE);
+	// put titles on top
+	f_puts(titleStr, &file);
+}
+
+
+void nf_add_line(char *line){
+	f_puts(line, &file);
+}
+
+
+void nf_publish(){
+	f_close(&file);
+	f_mount(0, NULL);
+
+	nf_createMSC();
+}
+
 
 // create .csv file from *dataArray and set MSP as MSC device
-void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t nrColumns){
-	FATFS fatfs;
-	FIL file;
-	const char *comma = ", ";
-	const char *eol = "\n";
-
+void nf_createCSV(char *titleStr, uint32_t *dataArray, uint16_t nrRows, uint16_t nrColumns){
 	f_mount(0, &fatfs);
 
 	// remove example file from TI
@@ -59,8 +87,8 @@ void nf_createCSV(char *titleStr, uint16_t *dataArray, uint16_t nrRows, uint16_t
 		uint16_t tmpColumns = 0;
 		for(tmpColumns = 0; tmpColumns < nrColumns; tmpColumns++){
 			// convert integer to string
-			char intStr[6] = {};
-			sprintf(intStr, "%d", *dataArray);
+			char intStr[10] = {};
+			sprintf(intStr, "%lu", *dataArray);
 			// put string into .csv file
 			f_puts(intStr, &file);
 			dataArray++;
