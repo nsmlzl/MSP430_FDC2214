@@ -39,7 +39,7 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 
 volatile uint32_t milliSeconds = 0;
 volatile uint8_t stpMeasurement = 0;
-volatile uint8_t err = 0;
+volatile uint8_t errGlob = 0;
 
 uint8_t currentlyMeasuring = 0;
 
@@ -61,13 +61,13 @@ uint16_t main(void){
 
 void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t intervall){
 	// set multiplexer for sChannel
-	err = nm_set(0, sChannel);
-	err = nm_set(1, sChannel);
+	errGlob = nm_set(0, sChannel);
+	errGlob = nm_set(1, sChannel);
 
 	uint32_t tmpFreq = 0;
 
 	// init fdc
-	err = nc_init();
+	errGlob = nc_init();
 
 	// init .csv file
 	char *title = "time [ms], frquency data\n";
@@ -86,7 +86,7 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 		}
 
 		tmpFreq = 0;
-		err = nc_get_freq(&tmpFreq, sChannel);
+		errGlob = nc_get_freq(&tmpFreq, sChannel);
 
 		// create .csv line
 		char tmpLine[24] = {};
@@ -99,7 +99,7 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 	}
 
 	timer_stop();
-	if(err){
+	if(errGlob){
 		red_led();
 	}
 	else{
@@ -191,7 +191,7 @@ __interrupt void TIMER1_A0_ISR(){
 	// check if old measurement wasn't completed -> error
 	// intervall would be too fast for measurement, if this happens
 	if(currentlyMeasuring){
-		err = 20;
+		errGlob = 20;
 	}
 }
 
