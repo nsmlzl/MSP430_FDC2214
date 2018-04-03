@@ -51,7 +51,7 @@ uint16_t main(void){
 	led_on();
 	btn_interrupt_init();
 
-	single_channel_measurement(3, 250, 80);
+	single_channel_measurement(0, 1000, 55);
 
 	// led_off();
 
@@ -70,12 +70,12 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 	errGlob = nc_init();
 
 	// init .csv file
-	char *title = "time [ms], frquency data\n";
+	char *title = "time [ms], frequency data\n";
 	nf_init(title);
 
 	// start both timer interrupts
 	timer_start(intervall);
-	uint8_t counter = 0;
+	uint16_t counter = 0;
 	for(counter = 0; counter < nrData; counter++){
 		// so interrupt knows intervall is too fast
 		currentlyMeasuring = 1;
