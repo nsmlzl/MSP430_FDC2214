@@ -51,7 +51,7 @@ uint16_t main(void){
 	led_on();
 	btn_interrupt_init();
 
-	single_channel_measurement(0, 1000, 55);
+	single_channel_measurement(0, 600, 35);
 
 	// led_off();
 
@@ -69,9 +69,9 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 	// init fdc
 	errGlob = nc_init();
 
-	// init .csv file
-	char *title = "time [ms], frequency data\n";
-	nf_init(title);
+	// create dataPtr
+	uint32_t *allData = (uint32_t*)malloc(nrData * 2 * sizeof(uint32_t));
+	uint32_t *allDataPtr = allData;
 
 	// start both timer interrupts
 	timer_start(intervall);
@@ -88,11 +88,10 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 		tmpFreq = 0;
 		errGlob = nc_get_freq(&tmpFreq, sChannel);
 
-		// create .csv line
-		char tmpLine[24] = {};
-		sprintf(tmpLine, "%lu, %lu\n", milliSeconds, tmpFreq);
-		nf_add_line(tmpLine);
-
+		*allDataPtr = milliSeconds;
+		allDataPtr++;
+		*allDataPtr = tmpFreq;
+		allDataPtr++;
 
 		currentlyMeasuring = 0;
 		__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
@@ -105,6 +104,25 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 	else{
 		led_off();
 	}
+
+	// create csv file
+	char *title = "time [ms], frequency data\n";
+	nf_init(title);
+
+	allDataPtr = allData;
+	for(counter = 0; counter < nrData; counter++){
+		uint32_t allDataTime = *allDataPtr;
+		allDataPtr++;
+		uint32_t allDataFreq = *allDataPtr;
+		allDataPtr++;
+
+		// create .csv line
+		char tmpLine[24] = {};
+		sprintf(tmpLine, "%lu, %lu\n", allDataTime, allDataFreq);
+		nf_add_line(tmpLine);
+	}
+	free(allData);
+
 
 	nf_publish();
 }
