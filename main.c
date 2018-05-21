@@ -35,7 +35,15 @@ void timer_stop();
 void btn_interrupt_init();
 
 // measurement functions
+void measure_function_1();
+void measure_function_2();
+void measure_function_3();
+void measure_function_4();
+void measure_function_5();
+void measure_function_6();
+
 void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t intervall);
+void single_channel_measurement_without_multiplexer(uint8_t sChannel, uint16_t nrData, uint32_t intervall);
 
 volatile uint32_t milliSeconds = 0;
 volatile uint8_t stpMeasurement = 0;
@@ -51,11 +59,118 @@ uint16_t main(void){
 	led_on();
 	btn_interrupt_init();
 
-	single_channel_measurement(0, 600, 35);
+	/* Dieser Bereich wird für die Versuche angepasst */
+	measure_function_4();
 
 	// led_off();
 
 	return 0;
+}
+
+
+void measure_function_1(){
+	uint8_t mchannel = 0;
+	single_channel_measurement(mchannel, 600, 50);
+}
+
+
+void measure_function_2(){
+	uint8_t mchannel = 0;
+	uint8_t function2 = 0;
+	if(function2){
+		single_channel_measurement(mchannel, 120, 250);
+	}
+	else{
+		single_channel_measurement(mchannel, 600, 50);
+	}
+}
+
+
+void measure_function_3(){
+	uint8_t mchannel = 0;
+	uint8_t function2 = 1;
+	if(function2){
+		single_channel_measurement_without_multiplexer(mchannel, 600, 50);
+	}
+	else{
+		single_channel_measurement(mchannel, 600, 50);
+	}
+}
+
+
+void measure_function_4(){
+	measure_function_1();
+}
+
+
+void measure_function_5(){
+	measure_function_1();
+}
+
+
+void single_channel_measurement_without_multiplexer(uint8_t sChannel, uint16_t nrData, uint32_t intervall){
+	uint32_t tmpFreq = 0;
+
+	// init fdc
+	errGlob = nc_init();
+
+	// create dataPtr
+	uint32_t *allData = (uint32_t*)malloc(nrData * 2 * sizeof(uint32_t));
+	uint32_t *allDataPtr = allData;
+
+	// start both timer interrupts
+	timer_start(intervall);
+	uint16_t counter = 0;
+	for(counter = 0; counter < nrData; counter++){
+		// so interrupt knows intervall is too fast
+		currentlyMeasuring = 1;
+
+		// stop measurement after button press
+		if(stpMeasurement){
+			break;
+		}
+
+		tmpFreq = 0;
+		errGlob = nc_get_freq(&tmpFreq, sChannel);
+
+		*allDataPtr = milliSeconds;
+		allDataPtr++;
+		*allDataPtr = tmpFreq;
+		allDataPtr++;
+
+		currentlyMeasuring = 0;
+		__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
+	}
+
+	timer_stop();
+	if(errGlob){
+		red_led();
+	}
+	else{
+		green_led();
+	}
+
+	// create csv file
+	char *title = "time [ms], frequency data\n";
+	nf_init(title);
+
+	allDataPtr = allData;
+	for(counter = 0; counter < nrData; counter++){
+		uint32_t allDataTime = *allDataPtr;
+		allDataPtr++;
+		uint32_t allDataFreq = *allDataPtr;
+		allDataPtr++;
+
+		// create .csv line
+		char tmpLine[24] = {};
+		sprintf(tmpLine, "%lu, %lu\n", allDataTime, allDataFreq);
+		nf_add_line(tmpLine);
+	}
+	free(allData);
+
+
+	led_off();
+	nf_publish();
 }
 
 
@@ -102,7 +217,7 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 		red_led();
 	}
 	else{
-		led_off();
+		green_led();
 	}
 
 	// create csv file
@@ -124,9 +239,93 @@ void single_channel_measurement(uint8_t sChannel, uint16_t nrData, uint32_t inte
 	free(allData);
 
 
+	led_off();
 	nf_publish();
 }
 
+
+// function which measures at multiple channels and frequencies at the same time
+void measure_function_6(){
+	uint16_t nrData = 125;
+	uint32_t intervall = 50;
+	// set multiplexer for sChannel
+	uint8_t sChannel = 0;
+	errGlob = nm_set(0, sChannel);
+	errGlob = nm_set(1, sChannel);
+
+	uint32_t tmpFreq = 0;
+
+	// init fdc
+	errGlob = nc_init();
+
+	// create dataPtr
+	uint32_t *allData = (uint32_t*)malloc(nrData * 2 * sizeof(uint32_t));
+	uint32_t *allDataPtr = allData;
+
+	// start both timer interrupts
+	timer_start(intervall);
+	uint16_t counter = 0;
+	for(counter = 0; counter < nrData; counter++){
+		for(sChannel = 0; sChannel < 4; sChannel++){
+			// so interrupt knows intervall is too fast
+			currentlyMeasuring = 1;
+
+			// set multiplexer
+			errGlob = nm_set(0, sChannel);
+			errGlob = nm_set(1, sChannel);
+
+			// stop measurement after button press
+			if(stpMeasurement){
+				break;
+			}
+
+			tmpFreq = 0;
+			errGlob = nc_get_freq(&tmpFreq, sChannel);
+
+			*allDataPtr = milliSeconds;
+			allDataPtr++;
+			*allDataPtr = tmpFreq;
+			allDataPtr++;
+
+			currentlyMeasuring = 0;
+			__bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, enable interrupts
+		}
+	}
+
+	timer_stop();
+	if(errGlob){
+		red_led();
+	}
+	else{
+		green_led();
+	}
+
+	// create csv file
+	char *title = "time [ms], frequency data\n";
+	nf_init(title);
+
+	allDataPtr = allData;
+	for(counter = 0; counter < nrData; counter++){
+		uint32_t allDataTime[4] = {};
+		uint32_t allDataFreq[4] = {};
+		for(sChannel = 0; sChannel < 4; sChannel++){
+			allDataTime[sChannel] = *allDataPtr;
+			allDataPtr++;
+			allDataFreq[sChannel] = *allDataPtr;
+			allDataPtr++;
+		}
+
+		// create .csv line
+		char tmpLine[24] = {};
+		sprintf(tmpLine, "%lu, %lu, %lu, %lu, %lu, %lu, %lu, %lu\n", allDataTime[0], allDataFreq[0], allDataTime[1], allDataFreq[1], allDataTime[2], allDataFreq[2], allDataTime[3], allDataFreq[3]);
+		nf_add_line(tmpLine);
+	}
+	free(allData);
+
+
+	led_off();
+	nf_publish();
+}
 
 // Led function
 // Error function turns red LED on
